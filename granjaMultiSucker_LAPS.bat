@@ -1,0 +1,1 @@
+python granjaMultiSucker.py --outputPath=D:\granjaResult --tipo=3
