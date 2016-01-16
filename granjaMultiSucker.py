@@ -23,7 +23,7 @@ RESULT_URL = 'http://www.kartodromogranjaviana.com.br/resultados/resultados_folh
 # GLOBAL DEF
 ################################################################################
 tipoResult = 1
-idResult = 28800
+idResult = 30000
 quantResult = 1000
 outputPath = (os.environ['HOME'] if 'HOME' in os.environ else '.') + '/granjaResult'
 
@@ -105,10 +105,10 @@ def main():
     )
     func_name = sys._getframe().f_code.co_name
     logger = logging.getLogger(func_name)
-    ###
-    logger.debug('Started')
+    logger.info('Started')
+
     parseArgs()
-    ###
+
     logger.debug('requests.session')
     session = requests.session()
     # `mount` a custom adapter that retries failed connections for HTTP and HTTPS requests.
@@ -116,24 +116,22 @@ def main():
 
     logger.debug('session.post')
     r = session.post(LOGIN_URL, data = LOGIN_PARAM)
-    ###
+
     idResultEnd = idResult
-    idResultBegin = idResult - quantResult + 1
+    idResultBegin = idResult - quantResult
     # 1) Init a Thread pool with the desired number of threads
     logger.debug('ThreadPool')
     pool = ThreadPool(10)
-    logger.debug('for idAtual in xrange(idResultEnd, idResultBegin, -1)')
+    logger.debug('for idAtual in xrange(%d, %d, -1)' % (idResultEnd, idResultBegin))
     for idAtual in xrange(idResultEnd, idResultBegin, -1):
         # 2) Add the task to the queue
         pool.add_task(downloadResult, session, idAtual)
     # 3) Wait for completion
     pool.wait_completion()
     ###
-    logger.debug('Finished')
+    logger.info('Finished')
 
 ################################################################################
 ################################################################################
-### my_string = "blah, lots  ,  of ,  spaces, here "
-### [x.strip() for x in my_string.split(',')]
 if __name__ == '__main__':
     main()
