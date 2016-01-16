@@ -1,4 +1,7 @@
-import sys
+"""
+Based on code from Emilio Monti and Riccardo Govoni.
+Orignal version: http://code.activestate.com/recipes/577187-python-thread-pool/
+"""
 
 from Queue import Queue
 from threading import Thread
