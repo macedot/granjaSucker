@@ -240,7 +240,7 @@ def createDB():
 def main():
 	appName = sys.argv[0]
 	logging.basicConfig(
-		filename = './log/' + appName + '_' + time.strftime("%Y%m%d_%H%M%S") + '.log',
+#		filename = './log/' + appName + '_' + time.strftime("%Y%m%d_%H%M%S") + '.log',
 		datefmt = '%Y-%m%d %H:%M:%S',
 		format = '%(asctime)s | %(levelname)s | %(name)s  | %(message)s',
 		level = logging.INFO
