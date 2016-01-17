@@ -100,7 +100,7 @@ def main():
     logging.basicConfig(
 #		filename = './log/' + appName + '_' + time.strftime("%Y%m%d_%H%M%S") + '.log',
         datefmt = '%Y-%m%d %H:%M:%S',
-        format = '%(asctime)s | %(levelname)s | %(name)s  | %(message)s',
+        format = '%(asctime)s | %(levelname)s | %(name)s | %(message)s',
         level = logging.INFO
     )
     func_name = sys._getframe().f_code.co_name

@@ -219,75 +219,6 @@ def createDB():
 	dbCursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS race_kart_index ON races (raceId, kartNumber);')
 	dbCursor.execute('CREATE INDEX IF NOT EXISTS driverClass_index ON races (driverClass);')
 
-	dbCursor.execute('''CREATE VIEW IF NOT EXISTS RANKING_INDOOR AS
-	SELECT
-		kartNumber,
-		driverName,
-		MIN(bestLapTime) AS 'BEST_LAP',
-		AVG(bestLapTime) AS 'AVG_LAP',
-		COUNT(*) AS RACES
-	FROM
-		races
-	WHERE
-		driverClass = 'INDOOR'
-		AND trackConfig = 'CIRCUITO 01'
-		AND raceId IN (SELECT DISTINCT raceId FROM races ORDER BY raceId DESC LIMIT 100)
-	GROUP BY
-		kartNumber
-	ORDER BY
-		BEST_LAP
-	LIMIT 20
-	;''')
-
-	dbCursor.execute('''CREATE VIEW IF NOT EXISTS RANKING_PAROLIN AS
-	SELECT
-		kartNumber,
-		driverName,
-		MIN(bestLapTime) AS 'BEST_LAP',
-		AVG(bestLapTime) AS 'AVG_LAP',
-		COUNT(*) AS RACES
-	FROM
-		races
-	WHERE
-		driverClass = 'PAROLIN'
-		AND trackConfig = 'CIRCUITO 01'
-		AND raceId IN (SELECT DISTINCT raceId FROM races ORDER BY raceId DESC LIMIT 100)
-	GROUP BY
-		kartNumber
-	ORDER BY
-		BEST_LAP
-	LIMIT 20
-	;''')
-
-	dbCursor.execute('''CREATE VIEW IF NOT EXISTS RANKING_TRACK AS
-	SELECT
-		trackConfig,
-		driverName,
-		driverClass,
-		MIN(bestLapTime) AS 'BEST_LAP',
-		COUNT(*) AS RACES
-	FROM
-		races
-	GROUP BY
-		trackConfig
-	;''')
-
-	dbCursor.execute('''CREATE VIEW IF NOT EXISTS RANKING_C01 AS
-	SELECT
-		driverClass,
-		driverName,
-		MIN(bestLapTime) AS 'BEST_LAP',
-		COUNT(*) AS RACES
-	FROM
-		races
-	WHERE
-		trackConfig = 'CIRCUITO 01'
-	GROUP BY
-		driverClass
-	ORDER BY
-		BEST_LAP
-	;''')
-
 	dbConnection.commit()
 	dbConnection.close()
 	logger.debug("DONE")
@@ -300,20 +231,19 @@ def main():
 	logging.basicConfig(
 #		filename = './log/' + appName + '_' + time.strftime("%Y%m%d_%H%M%S") + '.log',
 		datefmt = '%Y-%m%d %H:%M:%S',
-		format = '%(asctime)s | %(levelname)s | %(name)s  | %(message)s',
+		format = '%(asctime)s | %(levelname)s | %(name)s | %(message)s',
 		level = logging.INFO
 	)
 	func_name = sys._getframe().f_code.co_name
 	logger = logging.getLogger(func_name)
 	logger.info('Started')
 
-	parseArgs()
-
 	createDB()
+	parseArgs()
 
 	# 1) Init a Thread pool with the desired number of threads
 	logger.debug('ThreadPool')
-	pool = ThreadPool.ThreadPool(10)
+	pool = ThreadPool.ThreadPool(5)
 	logger.debug('for file in glob.glob(%s)', g_inputPath)
 	for file in glob.glob(g_inputPath):
 		# 2) Add the task to the queue

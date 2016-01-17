@@ -38,7 +38,7 @@ logFilePath="${GRANJA_WORK_PATH}/log/${baseName}-${currentTime}.log"
 findResultPattern="${GRANJA_RESULT_PATH}/*_1.html"
 
 # Should we go? 
-currentPath=$(pwd -P)
+previusPath=$(pwd -P)
 cd ${GRANJA_WORK_PATH}
 # fetch data from web
 echo "================================================================================" >> ${logFilePath}
@@ -53,16 +53,19 @@ if [ $numFetchResult -le 0 ]; then
 	exit 0
 fi
 
-# database
-#backup ${GRANJA_DB} 1>/dev/null
-
 # parse html into sqlite
 echo "================================================================================" >> ${logFilePath}
 echo "python granjaHtmlParse.py --inputPath=${findResultPattern}" >> ${logFilePath}
 echo "================================================================================" >> ${logFilePath}
 python granjaHtmlParse.py --inputPath=${findResultPattern} &>> ${logFilePath}
-cd ${currentPath}
 
+# update statistics tables
+echo "================================================================================" >> ${logFilePath}
+echo "python granjaUpdateStatistics.py" >> ${logFilePath}
+echo "================================================================================" >> ${logFilePath}
+python granjaUpdateStatistics.py &>> ${logFilePath}
+
+cd ${previusPath}
 # Update status with last data
 #lastID=$((lastID + numFetchResult))
 lastFile=$(ls ${findResultPattern}  | sort | tail -1)
