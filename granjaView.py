@@ -59,25 +59,25 @@ class granjaView(object):
 	def index(self):
 		pass
 
-	# @cherrypy.expose
-	# def RANKING_INDOOR(self):
-	# 	return tableData2Html('RANKING_INDOOR')
+	@cherrypy.expose
+	def INDOOR_RANKING_LAPTIME(self):
+		return tableData2Html('INDOOR_RANKING_LAPTIME_C01')
 
-	# @cherrypy.expose
-	# def RANKING_PAROLIN(self):
-	# 	return tableData2Html('RANKING_PAROLIN')
+	@cherrypy.expose
+	def PAROLIN_RANKING_LAPTIME(self):
+		return tableData2Html('PAROLIN_RANKING_LAPTIME_C01')
 
-	# @cherrypy.expose
-	# def RANKING_TRACK(self):
-	# 	return tableData2Html('RANKING_TRACK')
+	@cherrypy.expose
+	def GERAL_RANKING_LAPTIME_C01(self):
+		return tableData2Html('GERAL_RANKING_LAPTIME_C01')
 
-	# @cherrypy.expose
-	# def RANKING_C01(self):
-	# 	return tableData2Html('RANKING_C01')
+	@cherrypy.expose
+	def GERAL_RANKING_LAPTIME(self):
+		return tableData2Html('GERAL_RANKING_LAPTIME')
 
-	# @cherrypy.expose
-	# def RANKING_PODIUM(self):
-	# 	return tableData2Html('RANKING_PODIUM')
+	@cherrypy.expose
+	def ALLTIME_RANKING_LAPTIME(self):
+		return tableData2Html('ALLTIME_RANKING_LAPTIME')
 
 	@cherrypy.expose
 	def CKC_BI_INDOOR(self):
@@ -108,6 +108,7 @@ if __name__ == '__main__':
 	cherrypy.quickstart(granjaView(), '/', conf)
 
 #TODO:
+#/index/ -> iframe com rankings (SEM BI)
 #/ckc/indoor/podium
 #/ckc/indoor/laptime
 #/ckc/indoor/bi
