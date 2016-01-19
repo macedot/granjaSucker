@@ -66,15 +66,13 @@ class granjaView(object):
 		</style>
 		</head><body>
 		<table style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;">
-			<tr>
+			<tr style="height: 250px;">
 				<td><iframe src="/VIEW_LAST_RACES" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
+				<td><iframe src="/GERAL_RANKING_LAPTIME_C01" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
 				<td rowspan=3><iframe src="/ALLTIME_RANKING_LAPTIME" frameborder="0"></iframe></td>
 			</tr>
 			<tr>
-				<td><iframe src="/GERAL_RANKING_LAPTIME_C01" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
-			</tr>
-			<tr>
-				<td><iframe src="/GERAL_RANKING_LAPTIME" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
+				<td colspan=2><iframe src="/GERAL_RANKING_LAPTIME" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
 			</tr>
 		</table>
 		</body></html>
