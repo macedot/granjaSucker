@@ -45,22 +45,22 @@ g_raceHeader['NA VOLTA.'] = 'bestLap';
 def parseArgs():
 	global g_inputPath
 
-	func_name = sys._getframe().f_code.co_name
-	logger = logging.getLogger(func_name)
-
 	try:
+		func_name = sys._getframe().f_code.co_name
+		logger = logging.getLogger(func_name)
 		opts, args = getopt.getopt(sys.argv[1:], "i:", ["inputPath="])
+		for o, a in opts:
+			if o in ("-i", "--inputPath"):
+				g_inputPath = str(a)
+			else:
+				assert False, "unhandled option"
+		logger.debug("inputPath = %s", g_inputPath)
 	except getopt.GetoptError as err:
 		logger.warning(str(err)) # will print something like "option -a not recognized", 
 		sys.exit(2)
-
-	for o, a in opts:
-		if o in ("-i", "--inputPath"):
-			g_inputPath = str(a)
-		else:
-			assert False, "unhandled option"
-
-	logger.debug("inputPath = %s", g_inputPath)
+	except:
+		print "Unexpected error:", sys.exc_info()[0]
+		sys.exit(9)
 
 ################################################################################
 ################################################################################
@@ -89,6 +89,14 @@ Patrocinadores
 Pontos              0
 """
 ################################################################################
+def getValueIdx(value, list):
+	try:
+		ret = list.index(value)
+	except (KeyError, TypeError, ValueError):
+		ret = -1
+	return ret
+
+################################################################################
 def parseResult_Race(fileName): # tipo = 1
 	raceId, trackConfig, listHeader, listData = loadResultFile(fileName)
 	if not raceId:
@@ -106,7 +114,7 @@ def parseResult_Race(fileName): # tipo = 1
 	dictIdx = {}
 	fieldList = ['raceId', 'trackConfig']
 	for key in keyList:
-		dictIdx[key] = listHeader.index(key) if key in listHeader else -1
+		dictIdx[key] = getValueIdx(key, listHeader)
 		fieldList.append(g_raceHeader[key])
 		isValid = (isValid or dictIdx[key] >= 0)
 
@@ -126,14 +134,13 @@ def parseResult_Race(fileName): # tipo = 1
 			value = row[dictIdx[key]] if dictIdx[key] >= 0 else ''
 			value = value.replace(',', '.') # pt_BR time format
 			#value = value.replace('-', '') # when no bestSpeed data is returned
-			if value.find(':') > 0:
+			if ':' in value:
 				valTime = value.split(':')
 				value = float(valTime[1]) + 60 * float(valTime[0])
 				value = float("{0:.3f}".format(value))
 			insertData.append(value)
 
 		strQuery = "INSERT OR REPLACE INTO races (%s) values (%s)" % (','.join(fieldList), ','.join(['?' for x in fieldList]))
-		#logger.debug("%s | %s", strQuery, ','.join(insertData))
 		dbCursor.execute(strQuery, insertData)
 
 	dbConnection.commit()
@@ -165,6 +172,7 @@ def loadResultFile(fileName):
 	if headerbig.text.find('KARTODROMO INTERNACIONAL GRANJA VIANA') < 0:
 		logger.warning("Invalid file | %s", headerbig.text)
 		return None,None,None,None
+
 	trackConfig = ' '.join(headerbig.text.split(' ')[4:])
 	trackConfig = trackConfig.strip()
 
