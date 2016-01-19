@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import getopt
 import sys
 import os
 import logging
@@ -30,13 +29,15 @@ def updateStatistics():
 	dbCursor = dbConnection.cursor()
 	####################
 	dbCursor.execute('''DROP TABLE IF EXISTS LAST_RACES;''')
-	dbCursor.execute('''CREATE TABLE LAST_RACES AS SELECT DISTINCT raceId FROM races ORDER BY raceId DESC LIMIT 300;''')
+	dbCursor.execute('''CREATE TABLE LAST_RACES AS SELECT raceId,driverClass,COUNT(kartNumber) AS gridSize FROM races GROUP BY raceId ORDER BY raceId DESC LIMIT 200;''')
+	dbCursor.execute('''DROP VIEW IF EXISTS VIEW_LAST_RACES;''')
+	dbCursor.execute('''CREATE VIEW VIEW_LAST_RACES AS SELECT driverClass,COUNT(raceId) AS qtRaces FROM LAST_RACES GROUP BY driverClass;''')
 	####################
 	dbCursor.execute('''DROP TABLE IF EXISTS INDOOR_RANKING_LAPTIME_C01;''')
 	dbCursor.execute('''CREATE TABLE INDOOR_RANKING_LAPTIME_C01 AS
 	SELECT kartNumber, driverName, MIN(bestLapTime) AS 'BEST_LAP', AVG(bestLapTime) AS 'AVG_LAP', COUNT(*) AS RACES
 	FROM races
-	WHERE driverClass = 'INDOOR' AND trackConfig = 'CIRCUITO 01' AND raceId IN LAST_RACES
+	WHERE driverClass = 'INDOOR' AND trackConfig = 'CIRCUITO 01' AND raceId IN (SELECT raceId FROM LAST_RACES)
 	GROUP BY kartNumber
 	ORDER BY BEST_LAP;''')
 	####################
@@ -44,16 +45,15 @@ def updateStatistics():
 	dbCursor.execute('''CREATE TABLE PAROLIN_RANKING_LAPTIME_C01 AS
 	SELECT kartNumber, driverName, MIN(bestLapTime) AS 'BEST_LAP', AVG(bestLapTime) AS 'AVG_LAP', COUNT(*) AS RACES
 	FROM races
-	WHERE driverClass = 'PAROLIN' AND trackConfig = 'CIRCUITO 01' AND raceId IN LAST_RACES
+	WHERE driverClass = 'PAROLIN' AND trackConfig = 'CIRCUITO 01' AND raceId IN (SELECT raceId FROM LAST_RACES)
 	GROUP BY kartNumber
-	ORDER BY BEST_LAP
-	;''')
+	ORDER BY BEST_LAP;''')
 	####################
 	dbCursor.execute('''DROP TABLE IF EXISTS GERAL_RANKING_LAPTIME_C01;''')
 	dbCursor.execute('''CREATE TABLE GERAL_RANKING_LAPTIME_C01 AS
 	SELECT driverClass, driverName, MIN(bestLapTime) AS 'BEST_LAP', COUNT(*) AS RACES
 	FROM races
-	WHERE trackConfig = 'CIRCUITO 01' AND raceId IN LAST_RACES
+	WHERE trackConfig = 'CIRCUITO 01' AND raceId IN (SELECT raceId FROM LAST_RACES)
 	GROUP BY driverClass
 	ORDER BY BEST_LAP;''')
 	####################
@@ -61,7 +61,7 @@ def updateStatistics():
 	dbCursor.execute('''CREATE TABLE GERAL_RANKING_LAPTIME AS
 	SELECT trackConfig, driverName, driverClass, MIN(bestLapTime) AS 'BEST_LAP', COUNT(*) AS RACES
 	FROM races 
-	WHERE raceId IN LAST_RACES
+	WHERE raceId IN (SELECT raceId FROM LAST_RACES)
 	GROUP BY trackConfig;''')
 	####################
 	dbCursor.execute('''DROP TABLE IF EXISTS ALLTIME_RANKING_LAPTIME;''')
@@ -75,12 +75,12 @@ def updateStatistics():
 	dbCursor.execute('''DROP TABLE IF EXISTS INDOOR_KART_POS_FINISH;''')
 	dbCursor.execute('''CREATE TABLE INDOOR_KART_POS_FINISH AS 
 		SELECT kartNumber, positionFinish, COUNT(*) AS posCount FROM races
-		WHERE driverClass='INDOOR' AND raceId IN LAST_RACES
+		WHERE driverClass='INDOOR' AND raceId IN (SELECT raceId FROM LAST_RACES)
 		GROUP BY kartNumber, positionFinish;''')
 
 	dbCursor.execute('''DROP TABLE IF EXISTS INDOOR_RANKING_PODIUM;''')
 	dbCursor.execute('''CREATE TABLE INDOOR_RANKING_PODIUM AS 
-		SELECT *,(0.45*ifnull(qt1,0) + 0.25*ifnull(qt2,0) + 0.15*ifnull(qt3,0) + 0.1*ifnull(qt4,0) + 0.05*ifnull(qt5,0) + 0.05*ifnull(qt6,0)) / qtRaces AS PODIUM_RATE
+		SELECT *,(0.28*ifnull(qt1,0) + 0.20*ifnull(qt2,0) + 0.17*ifnull(qt3,0) + 0.14*ifnull(qt4,0) + 0.11*ifnull(qt5,0) + 0.09*ifnull(qt6,0)) / qtRaces AS PODIUM_RATE
 		FROM (
 			SELECT kartNumber,
 				SUM(posCount) AS qtRaces
@@ -107,15 +107,11 @@ def updateStatistics():
 			,T.BEST_LAP
 			,T.AVG_LAP
 			,T.RANK_LAPTIME
-			,0.0125 * (P.RANK_PODIUM + T.RANK_LAPTIME) AS RANK
-		FROM 
-			TEMP_INDOOR_RANKING_PODIUM P,TEMP_INDOOR_RANKING_LAPTIME_C01 T
-		WHERE
-			P.kartNumber=T.kartNumber
-		GROUP BY 
-			P.kartNumber
-		ORDER BY 
-			RANK;''')
+			,0.0125 * (P.RANK_PODIUM + T.RANK_LAPTIME) AS SCORE
+		FROM TEMP_INDOOR_RANKING_PODIUM P,TEMP_INDOOR_RANKING_LAPTIME_C01 T
+		WHERE P.kartNumber=T.kartNumber
+		GROUP BY P.kartNumber
+		ORDER BY SCORE;''')
 
 	####################
 	# CKC_BI_PAROLIN
@@ -123,12 +119,12 @@ def updateStatistics():
 	dbCursor.execute('''DROP TABLE IF EXISTS PAROLIN_KART_POS_FINISH;''')
 	dbCursor.execute('''CREATE TABLE PAROLIN_KART_POS_FINISH AS 
 		SELECT kartNumber, positionFinish, COUNT(*) AS posCount FROM races
-		WHERE driverClass='PAROLIN' AND raceId IN LAST_RACES
+		WHERE driverClass='PAROLIN' AND raceId IN (SELECT raceId FROM LAST_RACES)
 		GROUP BY kartNumber, positionFinish;''')
 
 	dbCursor.execute('''DROP TABLE IF EXISTS PAROLIN_RANKING_PODIUM;''')
 	dbCursor.execute('''CREATE TABLE PAROLIN_RANKING_PODIUM AS 
-		SELECT *,(0.45*ifnull(qt1,0) + 0.25*ifnull(qt2,0) + 0.15*ifnull(qt3,0) + 0.1*ifnull(qt4,0) + 0.05*ifnull(qt5,0) + 0.05*ifnull(qt6,0)) / qtRaces AS PODIUM_RATE
+		SELECT *,(0.28*ifnull(qt1,0) + 0.20*ifnull(qt2,0) + 0.17*ifnull(qt3,0) + 0.14*ifnull(qt4,0) + 0.11*ifnull(qt5,0) + 0.09*ifnull(qt6,0)) / qtRaces AS PODIUM_RATE
 		FROM (
 			SELECT kartNumber,
 				SUM(posCount) AS qtRaces
@@ -155,17 +151,17 @@ def updateStatistics():
 			,T.BEST_LAP
 			,T.AVG_LAP
 			,T.RANK_LAPTIME
-			,0.0125 * (P.RANK_PODIUM + T.RANK_LAPTIME) AS RANK
-		FROM 
-			TEMP_PAROLIN_RANKING_PODIUM P,TEMP_PAROLIN_RANKING_LAPTIME_C01 T
-		WHERE
-			P.kartNumber=T.kartNumber
-		GROUP BY 
-			P.kartNumber
-		ORDER BY 
-			RANK;''')
+			,0.0125 * (P.RANK_PODIUM + T.RANK_LAPTIME) AS SCORE
+		FROM TEMP_PAROLIN_RANKING_PODIUM P,TEMP_PAROLIN_RANKING_LAPTIME_C01 T
+		WHERE P.kartNumber=T.kartNumber
+		GROUP BY P.kartNumber
+		ORDER BY SCORE;''')
 
 	dbConnection.commit()
+
+	dbConnection.execute('''VACUUM;''')
+	dbConnection.commit()
+
 	dbConnection.close()
 	###
 	logger.debug("DONE")
