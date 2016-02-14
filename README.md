@@ -9,7 +9,7 @@ Quick-n-dirty implementation of web crawler for go-kart results from KGV (Kartod
 | Package | Description |
 | --- | --- |
 | CherryPy | [http://www.cherrypy.org/] (http://www.cherrypy.org/) |
-| CherryPy | [https://www.sqlite.org/] (https://www.sqlite.org/) |
+| SQLite | [https://www.sqlite.org/] (https://www.sqlite.org/) |
 
 
 ## Lib
