@@ -23,8 +23,8 @@ RESULT_URL = 'http://www.kartodromogranjaviana.com.br/resultados/resultados_folh
 # GLOBAL DEF
 ################################################################################
 tipoResult = 1
-idResult = 30000
-quantResult = 1000
+idResult = 29200
+quantResult = 300
 outputPath = (os.environ['HOME'] if 'HOME' in os.environ else '.') + '/granjaResult'
 
 ################################################################################

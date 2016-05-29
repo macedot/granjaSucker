@@ -30,24 +30,35 @@ if [ ! -f "${GRANJA_DB}" ]; then
 fi
 
 # Get last fetch parameters
-lastID=$(head -1 ${GRANJA_CFG_LAST} | awk -F, '{print $1}')
-howManyToFetch=$(head -1 ${GRANJA_CFG_LAST} | awk -F, '{print $2}')
+
+if [ ! -z "$1" ]; then
+	lastReadID=$1
+else
+	lastReadID=$(head -1 ${GRANJA_CFG_LAST} | awk -F, '{print $1}')
+fi
+
+if [ ! -z "$2" ]; then
+	howManyToFetch=$2
+else
+	howManyToFetch=$(head -1 ${GRANJA_CFG_LAST} | awk -F, '{print $2}')
+fi
+
 baseName=$(basename $0)
 currentTime=$(date +%Y%m%d_%H%M%S)
 logFilePath="${GRANJA_WORK_PATH}/log/${baseName}-${currentTime}.log"
 findResultPattern="${GRANJA_RESULT_PATH}/*_1.html"
 
-# Should we go? 
+echo "LOG: ${logFilePath}"
+# Should we go?
 previusPath=$(pwd -P)
 cd ${GRANJA_WORK_PATH}
 # fetch data from web
 echo "================================================================================" >> ${logFilePath}
-echo "python granjaMultiSucker.py --quant=${howManyToFetch} --id=${lastID} --outputPath=${GRANJA_RESULT_PATH}" >> ${logFilePath}
+echo "python granjaMultiSucker.py --quant=${howManyToFetch} --id=${lastReadID} --outputPath=${GRANJA_RESULT_PATH}" >> ${logFilePath}
 echo "================================================================================" >> ${logFilePath}
-python granjaMultiSucker.py --quant=${howManyToFetch} --id=${lastID} --outputPath=${GRANJA_RESULT_PATH} &>> ${logFilePath}
+python granjaMultiSucker.py --quant=${howManyToFetch} --id=${lastReadID} --outputPath=${GRANJA_RESULT_PATH} &>> ${logFilePath}
 
-numFetchResult=$(ls ${GRANJA_RESULT_PATH}/*_1.html 2>/dev/null | wc -l)
-
+numFetchResult=$(ls ${findResultPattern} 2>/dev/null | wc -l)
 if [ $numFetchResult -le 0 ]; then
 	echo ">> NO RESULT FETCH!" &>> ${logFilePath}
 	exit 0
@@ -57,7 +68,7 @@ fi
 echo "================================================================================" >> ${logFilePath}
 echo "python granjaHtmlParse.py --inputPath=${findResultPattern}" >> ${logFilePath}
 echo "================================================================================" >> ${logFilePath}
-python granjaHtmlParse.py --inputPath=${findResultPattern} &>> ${logFilePath}
+python granjaHtmlParse.py --inputPath="${findResultPattern}" &>> ${logFilePath}
 
 # update statistics tables
 echo "================================================================================" >> ${logFilePath}
@@ -67,11 +78,15 @@ python granjaUpdateStatistics.py &>> ${logFilePath}
 
 cd ${previusPath}
 # Update status with last data
-#lastID=$((lastID + numFetchResult))
 lastFile=$(ls ${findResultPattern}  | sort | tail -1)
 lastID=$(basename ${lastFile} | awk -F_ '{print $1}')
-echo "${lastID},${howManyToFetch}" > ${GRANJA_CFG_LAST}
+lastID=$((lastID + numFetchResult))
+echo "$lastReadID -gt $lastID"
+if [ "$lastReadID" -gt "$lastID" ]; then
+	echo "${lastID},${howManyToFetch}" > ${GRANJA_CFG_LAST}
+fi
 mv ${GRANJA_RESULT_PATH}/*.* ${GRANJA_HISTORY_PATH}/ 2>/dev/null
 
 # Job is done!
+echo "# Job is done!" >> ${logFilePath}
 exit 0

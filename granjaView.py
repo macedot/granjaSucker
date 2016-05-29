@@ -26,7 +26,7 @@ PATH_GRANJA_DB = 'sqlite/granjaResult.sqlite'
 ################################################################################
 def tableData2Html(tableName):
 	htmlcode = """<html><head><title>%s</title><link href="/static/style.css" rel="stylesheet"></head>
-	<body>""" % (tableName)
+	<body><div style="align:center; font:bold 10pt Verdana; width:100%%;">%s</div>""" % (tableName,tableName)
 
 	try:
 		con = sqlite3.connect(PATH_GRANJA_DB)
@@ -66,13 +66,14 @@ class granjaView(object):
 		</style>
 		</head><body>
 		<table style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;">
-			<tr style="height:250px;">
-				<td style="width:200px;"><iframe src="/VIEW_LAST_RACES" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
-				<td style="width:400px;"><iframe src="/GERAL_RANKING_LAPTIME_C01" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
-				<td rowspan=3><iframe src="/ALLTIME_RANKING_LAPTIME" frameborder="0"></iframe></td>
-			</tr>
-			<tr>
+			<tr style="height:50%;">
 				<td colspan=2><iframe src="/GERAL_RANKING_LAPTIME" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
+				<td><iframe src="/ALLTIME_RANKING_LAPTIME_INDOOR" frameborder="0"></iframe></td>
+			</tr>
+			<tr style="height:50%;">
+				<td style="width:250px;"><iframe src="/VIEW_LAST_RACES" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
+				<td style="width:400px;"><iframe src="/VIEW_LAST_RACES_PER_TRACK" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;"></iframe></td>
+				<td><iframe src="/ALLTIME_RANKING_LAPTIME_PAROLIN" frameborder="0"></iframe></td>
 			</tr>
 		</table>
 		</body></html>
@@ -81,15 +82,15 @@ class granjaView(object):
 
 	@cherrypy.expose
 	def INDOOR_RANKING_LAPTIME(self):
-		return tableData2Html('INDOOR_RANKING_LAPTIME_C01')
+		return tableData2Html('INDOOR_RANKING_LAPTIME_C_MODA')
 
 	@cherrypy.expose
 	def PAROLIN_RANKING_LAPTIME(self):
-		return tableData2Html('PAROLIN_RANKING_LAPTIME_C01')
+		return tableData2Html('PAROLIN_RANKING_LAPTIME_C_MODA')
 
 	@cherrypy.expose
-	def GERAL_RANKING_LAPTIME_C01(self):
-		return tableData2Html('GERAL_RANKING_LAPTIME_C01')
+	def GERAL_RANKING_LAPTIME_C_MODA(self):
+		return tableData2Html('GERAL_RANKING_LAPTIME_C_MODA')
 
 	@cherrypy.expose
 	def GERAL_RANKING_LAPTIME(self):
@@ -102,6 +103,18 @@ class granjaView(object):
 	@cherrypy.expose
 	def VIEW_LAST_RACES(self):
 		return tableData2Html('VIEW_LAST_RACES')
+
+	@cherrypy.expose
+	def VIEW_LAST_RACES_PER_TRACK(self):
+		return tableData2Html('VIEW_LAST_RACES_PER_TRACK')
+
+	@cherrypy.expose
+	def ALLTIME_RANKING_LAPTIME_INDOOR(self):
+		return tableData2Html('ALLTIME_RANKING_LAPTIME_INDOOR')
+
+	@cherrypy.expose
+	def ALLTIME_RANKING_LAPTIME_PAROLIN(self):
+		return tableData2Html('ALLTIME_RANKING_LAPTIME_PAROLIN')
 
 	@cherrypy.expose
 	def CKC_BI_INDOOR(self):

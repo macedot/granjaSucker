@@ -56,7 +56,7 @@ def parseArgs():
 				assert False, "unhandled option"
 		logger.debug("inputPath = %s", g_inputPath)
 	except getopt.GetoptError as err:
-		logger.warning(str(err)) # will print something like "option -a not recognized", 
+		logger.warning(str(err)) # will print something like "option -a not recognized",
 		sys.exit(2)
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
@@ -120,11 +120,13 @@ def parseResult_Race(fileName): # tipo = 1
 
 	if not isValid:
 		logger.warning("Invalid File | %s", fileName)
-		return 
+		return
 
 	dbConnection = sqlite3.connect(PATH_GRANJA_DB)
+	dbConnection.execute("PRAGMA busy_timeout = 30000")
 	dbCursor = dbConnection.cursor()
-		
+
+	count = 0
 	for row in listData:
 		if not row:
 			continue
@@ -142,7 +144,11 @@ def parseResult_Race(fileName): # tipo = 1
 
 		strQuery = "INSERT OR REPLACE INTO races (%s) values (%s)" % (','.join(fieldList), ','.join(['?' for x in fieldList]))
 		dbCursor.execute(strQuery, insertData)
-
+		
+		count = count + 1
+		if count % 10 == 0: 
+			dbConnection.commit()
+	
 	dbConnection.commit()
 	dbConnection.close()
 

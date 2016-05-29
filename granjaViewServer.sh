@@ -30,7 +30,7 @@ fi
 
 while(true); do
 	python ${granjaView_py}
-	sleep 10
+	sleep 3
 done
 
 # Job is done!
