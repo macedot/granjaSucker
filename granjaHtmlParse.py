@@ -11,6 +11,7 @@ import glob
 import re
 import json
 import sqlite3
+import re
 
 import ThreadPool
 
@@ -246,7 +247,7 @@ def main():
 #		filename = './log/' + appName + '_' + time.strftime("%Y%m%d_%H%M%S") + '.log',
 		datefmt = '%Y-%m%d %H:%M:%S',
 		format = '%(asctime)s | %(levelname)s | %(name)s | %(message)s',
-		level = logging.INFO
+		level = logging.DEBUG
 	)
 	func_name = sys._getframe().f_code.co_name
 	logger = logging.getLogger(func_name)

@@ -85,6 +85,10 @@ class granjaView(object):
 		return tableData2Html('INDOOR_RANKING_LAPTIME_C_MODA')
 
 	@cherrypy.expose
+	def INDOOR_RANKING_PODIUM(self):
+		return tableData2Html('INDOOR_RANKING_PODIUM')
+
+	@cherrypy.expose
 	def PAROLIN_RANKING_LAPTIME(self):
 		return tableData2Html('PAROLIN_RANKING_LAPTIME_C_MODA')
 
